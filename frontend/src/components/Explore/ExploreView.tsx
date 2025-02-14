@@ -305,7 +305,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
     const sessionId = storageService.getSessionId();
     if (!userContext) throw new Error("User Info Not found")
     const eventSource = new EventSource(
-      `http://127.0.0.1:8000/api/stream?session_id=${sessionId}&prompt=${encodeURIComponent(query)}&age=${userContext.age}`
+      `https://educasm-habeeb-backend.vercel.app/api/stream?session_id=${sessionId}&prompt=${encodeURIComponent(query)}&age=${userContext.age}`
     )
   
     eventSource.onmessage = (event) => {
