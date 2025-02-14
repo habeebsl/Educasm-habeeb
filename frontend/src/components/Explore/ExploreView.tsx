@@ -7,6 +7,7 @@ import { SearchBar } from '../shared/SearchBar';
 import { MarkdownComponentProps } from '../../types';
 import { RelatedTopics } from './RelatedTopics';
 import { RelatedQuestions } from './RelatedQuestions';
+import { Loading } from '../shared/Loading';
 import { LoadingAnimation } from '../shared/LoadingAnimation';
 import { UserContext } from '../../types';
 import { api } from '../../services/api';
@@ -190,6 +191,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -249,47 +251,46 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 
   useEffect(() => {
     const queryMessages = async () => {
-      const response = await api.getMessages();
-      const data = response.data;
-      console.log(data);
+      try {
+        const response = await api.getMessages();
+        const data = response.data;
   
-      if (data.messages.length !== 0) {
-        const newMessages: Message[] = data.messages.map((message: { role: string; content: any }) => {
-          if (message.role === 'user') {
-            return {
-              type: 'user',
-              content: message.content
-            };
-          } else {
-            let parsedContent;
-            try {
-              parsedContent = JSON.parse(message.content);
-            } catch (error) {
-              console.error("Error parsing AI message content:", error);
-              return {
-                type: 'ai',
-                content: "Error: Could not parse AI response."
-              };
-            }
-        
-            return {
-              type: 'ai',
-              content: parsedContent.content,
-              topics: parsedContent.relatedTopics,
-              questions: parsedContent.relatedQuestions 
-            };
-          }
-        });
-        
+        if (!data.messages.length) {
+          setMessages([]);
+          return;
+        }
   
+        const newMessages: Message[] = data.messages.map(parseMessage);
         setMessages(newMessages);
-        console.log("messages2b: ", newMessages);
-      } else {
-        setMessages([]);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        setMessages([]); // Ensure fallback state
+      } finally {
+        setIsPageLoading(false);
       }
-    };   
+    };
+  
     queryMessages();
   }, []);
+  
+  const parseMessage = (message: { role: string; content: any }): Message => {
+    if (message.role === "user") {
+      return { type: "user", content: message.content };
+    }
+  
+    try {
+      const parsedContent = JSON.parse(message.content);
+      return {
+        type: "ai",
+        content: parsedContent.content,
+        topics: parsedContent.relatedTopics,
+        questions: parsedContent.relatedQuestions,
+      };
+    } catch (error) {
+      console.error("Error parsing AI message content:", error);
+      return { type: "ai", content: "Error: Could not parse AI response." };
+    }
+  };
 
   const handleSearch = useCallback((query: string) => {
     setIsLoading(true);
@@ -350,9 +351,17 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
     }
   }, [initialQuery, handleSearch]);
 
+  if (isPageLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loading size="lg" />
+      </div>
+    )
+  }
+
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] flex flex-col" ref={containerRef}>
-      {(showInitialSearch && messages.length === 0) ? (
+      {(showInitialSearch && !messages.length) ? (
         <div className="flex-1 flex flex-col items-center justify-center px-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4">
             What do you want to explore?
