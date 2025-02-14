@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from redis_utils import get_messages
+from utils.redis_utils import get_messages
 
 
 chat_router = APIRouter()
