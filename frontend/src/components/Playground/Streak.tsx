@@ -6,7 +6,7 @@ export default function StreakComponent() {
   const [showTooltip, setShowTooltip] = useState(false);
   
   const getCurrentStreak = () => {
-    let lastDate = storageService.getLastDate();
+    const lastDate = storageService.getLastDate();
     const currentDate = new Date().toISOString().split('T')[0];
 
     if (!lastDate) {

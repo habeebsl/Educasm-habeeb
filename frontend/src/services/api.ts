@@ -4,7 +4,7 @@ import { get_random_aspect } from '../utils/helpers';
 
 
 const apiClient = axios.create({
-	baseURL: 'https://educasm-habeeb-backend.vercel.app/api',
+	baseURL: 'http://127.0.0.1:8000/api',
 	headers: {
 		'Content-Type': 'application/json'
 	}

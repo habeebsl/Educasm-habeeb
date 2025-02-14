@@ -28,7 +28,7 @@ async def generate_openai_stream(session_id: str, prompt: str, age: str):
         messages = [
             {"role": "system", "content": EXPLORE_SYSTEM_PROMPT}
         ]
-        messages += await get_messages(session_id)
+        messages += get_messages(session_id)
         messages.append({"role": "user", "content": get_explore_user_prompt(prompt, age)})
         
         stream = client.chat.completions.create(
@@ -72,8 +72,8 @@ async def generate_openai_stream(session_id: str, prompt: str, age: str):
                     continue
         
         yield "data: [DONE]\n\n"
-        await save_message(session_id, "user", prompt)
-        await save_message(session_id, "assistant", full_response)
+        save_message(session_id, "user", prompt)
+        save_message(session_id, "assistant", full_response)
         
     except Exception as e:
         print(f"Error in generate_stream: {e}")
