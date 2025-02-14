@@ -1,10 +1,8 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout/Layout';
 import { ExploreView } from './components/Explore/ExploreView';
 import { PlaygroundView } from './components/Playground/PlaygroundView';
 import { ReviewMistakes } from './components/Review/ReviewMistakesView';
-// import { TestView } from './components/Test/TestView';
 import { PreFillForm } from './components/shared/PreFillForm';
 import storageService from './services/storageService';
 import { Toaster, toast } from 'react-hot-toast';
@@ -61,16 +59,6 @@ function App() {
                 <ReviewMistakes/>
               } 
             />
-            {/* <Route 
-              path="/test" 
-              element={
-                <TestView 
-                  onError={handleError}
-                  onSuccess={handleSuccess}
-                  userContext={userContext}
-                />
-              } 
-            /> */}
           </Routes>
         </Layout>
       </div>

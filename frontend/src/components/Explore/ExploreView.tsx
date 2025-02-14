@@ -1,4 +1,3 @@
-// src/components/Explore/ExploreView.tsx
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
