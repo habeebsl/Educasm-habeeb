@@ -234,9 +234,14 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     setIsPaused(newPausedState);
 
     if (newPausedState) {
+      stopQuestionTimer()
       stopCountdown();
     } else {
-      startCountdown();
+      const interval = setInterval(() => {
+        setCurrentQuestionTime(prev => prev + 1);
+      }, 1000);
+      setTimerInterval(interval);
+      startCountdown()
     }
   };
 
