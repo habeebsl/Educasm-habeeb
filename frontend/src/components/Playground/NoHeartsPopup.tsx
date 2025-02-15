@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
 
+const MAX_HEARTS = 10;
 
-export const NoHeartsPopup = ({ updateHearts }: { updateHearts: (hearts: number) => void }) => {
+export const NoHeartsPopup = ({
+  updateHearts,
+}: {
+  updateHearts: (hearts: number | ((prevHearts: number) => number)) => void;
+}) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    const refillInterval = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
     const updateTimer = () => {
       const heartReplenishTime = localStorage.getItem("heartReplenishTime");
-      
+
       if (!heartReplenishTime) {
         setIsVisible(false);
         return;
@@ -19,17 +26,29 @@ export const NoHeartsPopup = ({ updateHearts }: { updateHearts: (hearts: number)
       const difference = targetTime - now;
 
       if (difference <= 0) {
-        updateHearts(1);
-        localStorage.removeItem("heartReplenishTime");
+        // Calculate how many refill intervals have passed
+        const intervalsPassed = Math.floor((now - targetTime) / refillInterval) + 1;
+        updateHearts((prevHearts: number) => {
+          const newHeartCount = Math.min(prevHearts + intervalsPassed, MAX_HEARTS);
+          if (newHeartCount < MAX_HEARTS) {
+            // Set the next target time based on the number of intervals that passed
+            const nextTime = targetTime + intervalsPassed * refillInterval;
+            localStorage.setItem("heartReplenishTime", nextTime.toString());
+          } else {
+            // Remove the timer if hearts are full
+            localStorage.removeItem("heartReplenishTime");
+          }
+          return newHeartCount;
+        });
         setIsVisible(false);
         clearInterval(timer);
         return;
       }
 
+      // Update the countdown display
       const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
       const minutes = Math.floor((difference / (1000 * 60)) % 60);
       const seconds = Math.floor((difference / 1000) % 60);
-
       setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
     };
 

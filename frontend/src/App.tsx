@@ -12,6 +12,7 @@ import { GoogleTagManager } from './components/shared/GoogleTagManager';
 import { UserContext } from './types';
 
 function App() {
+  // localStorage.clear()
   const [userContext, setUserContext] = useState<UserContext | null>(storageService.getUserInfo());
   const [isLoading, setIsLoading] = useState(false)
   const handleError = (message: string) => {

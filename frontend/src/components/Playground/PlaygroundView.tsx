@@ -312,6 +312,7 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     } else {
       resetStoredConsecutive()
       decrementHearts()
+      console.log("Remaining Hearts: ", hearts)
     }
 
     if (isPaused) {
@@ -422,7 +423,6 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
       <p className="mt-4 text-white text-lg text-center">
         Come back later when your hearts are refilled ❤️
       </p>
-
       <NoHeartsPopup updateHearts={updateHearts} />
     </div>
 
