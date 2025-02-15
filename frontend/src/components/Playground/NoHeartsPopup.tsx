@@ -2,11 +2,7 @@ import { useState, useEffect } from "react";
 
 const MAX_HEARTS = 10;
 
-export const NoHeartsPopup = ({
-  updateHearts,
-}: {
-  updateHearts: (hearts: number | ((prevHearts: number) => number)) => void;
-}) => {
+export const NoHeartsPopup = (updateHearts: any) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [isVisible, setIsVisible] = useState(true);
 
