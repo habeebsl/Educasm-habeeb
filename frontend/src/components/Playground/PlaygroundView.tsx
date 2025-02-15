@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SearchBar } from "../shared/SearchBar";
 import { Loading } from "../shared/Loading";
 import { api } from "../../services/api";
@@ -150,6 +150,10 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
   const [nextQuestion, setNextQuestion] = useState<Question | null>(null);
   const [preloadedQuestion, setPreloadedQuestion] = useState<Question | null>(null);
   const [shouldShowNext, setShouldShowNext] = useState(false);
+  const [countdownInterval, setCountdownInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+  const isPausedRef = useRef(isPaused);
+  const COUNTDOWN_DURATION = 5;
+  const countdownTimeRef = useRef<number>(COUNTDOWN_DURATION);
 
   const startQuestionTimer = (): void => {
     if (timerInterval) {
@@ -255,21 +259,11 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     setIsPaused(newPausedState);
 
     if (newPausedState) {
-        stopQuestionTimer()
+      stopCountdown();
     } else {
-        const interval = setInterval(() => {
-            setCurrentQuestionTime(prev => prev + 1);
-        }, 1000);
-        setTimerInterval(interval);
-    }
-
-    if (nextQuestionTimer) {
-        clearTimeout(nextQuestionTimer);
-        setNextQuestionTimer(null);
+      startCountdown();
     }
   };
-
-  const COUNTDOWN_DURATION = 5;
 
   const updateStats = (isCorrect: boolean): void => {
     setStats((prev) => {
@@ -288,24 +282,38 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
   };
 
   const startCountdown = () => {
-    setNextQuestionCountdown(COUNTDOWN_DURATION);
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+    }
+
+    setNextQuestionCountdown(countdownTimeRef.current);
+
     const interval = setInterval(() => {
-      setNextQuestionCountdown((prev) => {
-        if (prev === null) return null;
-        const next = prev - 0.1;
-        if (next <= 0) {
+      if (!isPausedRef.current) {
+        countdownTimeRef.current = Math.max(0, countdownTimeRef.current - 0.1);
+        setNextQuestionCountdown(parseFloat(countdownTimeRef.current.toFixed(1)));
+
+        if (countdownTimeRef.current <= 0) {
           clearInterval(interval);
+          setCountdownInterval(null);
           setShouldShowNext(true)
-          return null;
         }
-        return next;
-      });
+      }
     }, 100);
+
+    setCountdownInterval(interval);
+  };
+
+  const stopCountdown = () => {
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      setCountdownInterval(null);
+    }
   };
 
   const handleAnswer = (index: number) => {
     if (selectedAnswer !== null || !currentQuestion) return;
-    
+  
     setSelectedAnswer(index);
     setShowExplanation(true);
     stopQuestionTimer();
@@ -314,11 +322,26 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     updateDifficultyMetrics(currentQuestionTime, isCorrect);
     updateStats(isCorrect);
     
-    if (!isPaused) {
-      fetchNewQuestion();
-      startCountdown();
+    if (isPaused) {
+      setIsPaused(false);
     }
+    
+    fetchNewQuestion();
+    startCountdown();
   };
+
+  useEffect(() => {
+    return () => {
+      stopQuestionTimer();
+      stopCountdown();
+    };
+  }, []);
+  
+  useEffect(() => {
+    setIsPaused(false);
+    stopCountdown();
+    countdownTimeRef.current = COUNTDOWN_DURATION
+  }, [currentQuestion]);
 
   useEffect(() => {
     if (query) {
@@ -360,6 +383,10 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
       }));
     }
   }, [shouldShowNext, preloadedQuestion]);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
   // Add cleanup for timer
   useEffect(() => {
@@ -593,5 +620,3 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     </div>
   );
 };
-
-// abc
