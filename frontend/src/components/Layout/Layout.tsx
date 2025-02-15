@@ -18,7 +18,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top Logo Bar - Simplified */}
-      <header className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur-lg z-40">
+      <header className="nav-header fixed top-0 left-0 right-0 bg-background/95 backdrop-blur-lg z-40">
         <div className="flex justify-center items-center h-14 px-4">
           <a href="/" onClick={handleLogoClick} className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

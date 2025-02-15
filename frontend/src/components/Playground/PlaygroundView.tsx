@@ -3,9 +3,12 @@ import { SearchBar } from "../shared/SearchBar";
 import { Loading } from "../shared/Loading";
 import { api } from "../../services/api";
 import StreakComponent from "./Streak";
+import HeartsComponent from "./Hearts";
 import { transformQuestion } from "../../utils/helpers";
 import { Trophy, Timer, Target, Award, Pause, Play, CheckCircle, XCircle, Lightbulb } from "lucide-react";
 import { Question, UserContext } from "../../types";
+import { useHearts, useStoredConsecutive } from "../../hooks/useHearts";
+import { NoHeartsPopup } from "./NoHeartsPopup";
 
 
 interface PlaygroundViewProps {
@@ -127,6 +130,8 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
   const [preloadedQuestion, setPreloadedQuestion] = useState<Question | null>(null);
   const [shouldShowNext, setShouldShowNext] = useState(false);
   const [countdownInterval, setCountdownInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+  const { storedConsecutive, incrementStoredConsecutive, resetStoredConsecutive } = useStoredConsecutive()
+  const { hearts, decrementHearts, updateHearts } = useHearts()
   const isPausedRef = useRef(isPaused);
   const COUNTDOWN_DURATION = 5;
   const countdownTimeRef = useRef<number>(COUNTDOWN_DURATION);
@@ -302,6 +307,13 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     updateDifficultyMetrics(currentQuestionTime, isCorrect);
     updateStats(isCorrect);
     
+    if (isCorrect) {
+      incrementStoredConsecutive() 
+    } else {
+      resetStoredConsecutive()
+      decrementHearts()
+    }
+
     if (isPaused) {
       setIsPaused(false);
     }
@@ -386,9 +398,43 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     );
   }
 
+  if (hearts <= 0) {
+    return (
+    <div className="flex flex-col items-center justify-center bg-gray-900 mt-20">
+      <svg
+        fill="red"
+        width="200"
+        height="200"
+        version="1.1"
+        id="Capa_1"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 516.248 516.249"
+        xmlSpace="preserve"
+      >
+        <g>
+          <g>
+            <path d="M205.585,132.113c4.303-4.944,4.169-12.833-0.765-17.155C183.477,96.225,124.582,54.81,55.091,93.48 c0,0-97.939,50.452-32.646,177.079c48.396,80.736,172.364,88.645,225.474,170.814c3.558,5.509,6.273,4.915,6.579-1.635 l3.213-68.161c0.306-6.551-3.424-15.014-8.348-18.905c-4.925-3.893-5.585-11.198-1.492-16.323l20.78-25.981 c4.093-5.116,2.658-11.638-3.213-14.554l-41.435-20.598c-5.871-2.917-6.569-8.722-1.568-12.948l44.571-37.714 c5.001-4.236,4.131-9.658-1.951-12.106l-84.82-34.167c-6.082-2.448-7.525-8.443-3.213-13.388L205.585,132.113z"></path> 
+            <path d="M304.434,115.254c-3.548,5.508-10.089,13.407-15.482,17.146l-36.136,25.054c-5.384,3.739-5.355,9.754,0.066,13.436 l77.562,52.689c5.422,3.681,5.192,9.285-0.526,12.498l-49.064,27.664c-5.709,3.223-6.054,8.97-0.766,12.843l33.526,24.557 c5.288,3.872,5.498,10.423,0.459,14.621l-28.879,24.116c-5.029,4.198-5.805,11.762-1.721,16.897l1.166,1.463 c4.083,5.125,5.747,14.344,3.787,20.598c-4.743,15.108-12.947,42.151-17.04,61.085c-1.387,6.407,0.42,7.01,3.815,1.396 c59.345-98.111,129.38-64.452,211.234-162.095c20.406-21.889,55.406-105.608,0-166.942 C434.11,54.36,340.331,59.515,304.434,115.254z"></path> 
+          </g>
+        </g>
+      </svg>
+
+      <p className="mt-4 text-white text-lg text-center">
+        Come back later when your hearts are refilled ❤️
+      </p>
+
+      <NoHeartsPopup updateHearts={updateHearts} />
+    </div>
+
+    )
+  }
+
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] flex flex-col">
-      <StreakComponent/>
+    <div className="fixed top-4 right-4 flex-row-reverse flex gap-4 z-50">
+      <StreakComponent />
+      <HeartsComponent hearts={hearts} updateHearts={updateHearts} storedConsecutive={storedConsecutive} />
+    </div>
       {!currentQuestion || sessionStats.isSessionComplete ? (
         <div className="flex-1 flex flex-col items-center justify-center px-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4">

@@ -50,3 +50,9 @@ body {
 .stats-label {
   @apply text-sm text-gray-400;
 }
+
+@media (max-width: 768px) {
+  .nav-header > div {
+    justify-content: flex-start; /* Aligns the logo to the left */
+  }
+}

@@ -24,7 +24,10 @@ import { UserContext } from "../types";
     private readonly HISTORY_KEY = 'edu_ai_history';
     private readonly SESSION_ID_KEY = 'edu_ai_session_id';
     private readonly STREAK_KEY = 'edu_ai_streak';
-    private readonly LAST_DATE_KEY = 'edu_ai_last_date';
+    private readonly STREAK_LAST_DATE_KEY = 'edu_ai_last_date';
+    private readonly HEARTS_KEY = 'edu_ai_hearts'
+    private readonly LAST_HEARTS_KEY = 'edu_ai_stored_last_hearts'
+    private readonly STORED_CONSECUTIVE_CORRECT_KEY = 'edu_ai_stored_consecutive_correct'
 
     constructor() {
       // Initialize if needed
@@ -40,13 +43,43 @@ import { UserContext } from "../types";
       return data ? JSON.parse(data) : null;
     }
 
+    getHearts() {
+      const hearts = localStorage.getItem(this.HEARTS_KEY);
+      if (hearts !== null) {
+        return parseInt(hearts);
+      }
+      this.setHearts(10);
+      return 10;
+    }
+
+    setHearts(value: number) {
+      localStorage.setItem(this.HEARTS_KEY, String(value))
+    }
+
+    setStoredLastHeartTime(time: Date) {
+      localStorage.setItem(this.LAST_HEARTS_KEY, time.toString())
+    }
+
+    getStoredLastHeartTime() {
+      const time = localStorage.getItem(this.LAST_HEARTS_KEY);
+      return time ? new Date(time).getTime() : null;
+    }
+
+    getStoredConsecutive() {
+      return parseInt(localStorage.getItem(this.STORED_CONSECUTIVE_CORRECT_KEY) || '0')
+    }
+
+    setStoredConsecutive(value: number) {
+      localStorage.setItem(this.STORED_CONSECUTIVE_CORRECT_KEY, String(value))
+    }
+
     getLastDate() {
-      return localStorage.getItem(this.LAST_DATE_KEY)
+      return localStorage.getItem(this.STREAK_LAST_DATE_KEY)
     }
 
     setLastDate() {
       const currentDate = new Date().toISOString().split('T')[0]
-      localStorage.setItem(this.LAST_DATE_KEY, currentDate)
+      localStorage.setItem(this.STREAK_LAST_DATE_KEY, currentDate)
     }
 
     getUserStreak() {
