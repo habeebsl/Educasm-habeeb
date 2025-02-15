@@ -49,9 +49,6 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [nextQuestionTimer, setNextQuestionTimer] = useState<ReturnType<
-    typeof setTimeout
-  > | null>(null);
   const [currentQuestionTime, setCurrentQuestionTime] = useState<number>(0);
   const [timerInterval, setTimerInterval] = useState<ReturnType<
     typeof setInterval
@@ -134,19 +131,6 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     return (timeScore + correctnessScore) / 2;
   };
 
-  const [_topicProgress, _setTopicProgress] = useState<TopicProgress>(() => {
-    const saved = localStorage.getItem(`topic-progress-${query}`);
-    return saved
-      ? JSON.parse(saved)
-      : {
-          totalAttempts: 0,
-          successRate: 0,
-          averageTime: 0,
-          lastLevel: 1,
-          masteryScore: 0,
-        };
-  });
-
   const [nextQuestion, setNextQuestion] = useState<Question | null>(null);
   const [preloadedQuestion, setPreloadedQuestion] = useState<Question | null>(null);
   const [shouldShowNext, setShouldShowNext] = useState(false);
@@ -192,7 +176,6 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     if (sessionStats.totalQuestions >= sessionStats.sessionLimit) {
       setSessionStats((prev) => ({ ...prev, isSessionComplete: true }));
       stopQuestionTimer();
-      if (nextQuestionTimer) clearTimeout(nextQuestionTimer);
       onSuccess("Congratulations! You've completed your practice session! 🎉");
       return;
     }
@@ -356,12 +339,6 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
   }, [initialQuery]);
 
   useEffect(() => {
-    if (_topicProgress) {
-      console.log('Topic progress updated:', _topicProgress);
-    }
-  }, [_topicProgress]);
-
-  useEffect(() => {
     if (nextQuestion) {
       prefetchNextQuestion();
     }
@@ -388,7 +365,6 @@ export const PlaygroundView: React.FC<PlaygroundViewProps> = ({
     isPausedRef.current = isPaused;
   }, [isPaused]);
 
-  // Add cleanup for timer
   useEffect(() => {
     return () => {
       if (timerInterval) {
